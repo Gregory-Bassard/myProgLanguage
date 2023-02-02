@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -15,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace myProgLanguage
 {
@@ -23,28 +26,50 @@ namespace myProgLanguage
     /// </summary>
     public partial class MainWindow : Window
     {
+        string text;
+        bool flag = true;
+        int count = 0;
+        List<LED> LEDs = new List<LED>();
         public MainWindow()
         {
             InitializeComponent();
-
+            while (flag)
+            {
+                if ((Ellipse)FindName($"LED{count}") != null)
+                {
+                    Ellipse ellipse = (Ellipse)FindName($"LED{count}");
+                    LED newLed = new LED();
+                    newLed.Id = count;
+                    newLed.ellipse = ellipse;
+                    LEDs.Add(newLed);
+                }
+                else
+                    flag = false;
+                count++;
+            }
         }
 
 
 
         public void LedOn(int ledId)
         {
-            Ellipse Led = (Ellipse)FindName($"LED{ledId}");
-            Led.Fill = Brushes.Green;
-            InvalidateVisual();
+            LEDs.ForEach(led =>
+            {
+                if (led.Id == ledId)
+                    led.isOn = true;
+            });
         }
         public void LedOff(int ledId)
         {
-            Ellipse Led = (Ellipse)FindName($"LED{ledId}");
-            Led.Fill = Brushes.Red;
+            LEDs.ForEach(led =>
+            {
+                if (led.Id == ledId)
+                    led.isOn = false;
+            });
         }
         public void Restart()
         {
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < LEDs.Count; i++)
             {
                 LedOff(i);
             }
@@ -53,9 +78,8 @@ namespace myProgLanguage
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Restart();
-            
             //Lire le code
-            string text = TextZone.Text;
+            text = TextZone.Text;
             string[] lines = text.Split("\n");
             foreach (string line in lines)
             {
@@ -76,7 +100,9 @@ namespace myProgLanguage
                     case "INC":
                         break;
                 }
+                Refresh();
             }
+            Refresh();
         }
         public void SET(string[] words)
         {
@@ -115,5 +141,16 @@ namespace myProgLanguage
                 Thread.Sleep(param_xxx);
             }
         }
+        private void Refresh()
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                LEDs.ForEach(led =>
+                {
+                    led.Update();
+                });
+            });
+        }
+
     }
 }
