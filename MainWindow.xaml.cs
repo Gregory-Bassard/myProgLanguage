@@ -27,57 +27,31 @@ namespace myProgLanguage
     public partial class MainWindow : Window
     {
         string text;
-        bool flag = true;
-        int count = 0;
-        List<LED> LEDs = new List<LED>();
+        List<LED> leds;
+        List<Variable> variables;
+
         public MainWindow()
         {
             InitializeComponent();
-            while (flag)
+            leds = new List<LED>();
+            variables = new List<Variable>();
+
+            for (int i = 0; (Ellipse)FindName($"LED{i}") != null; i++)
             {
-                if ((Ellipse)FindName($"LED{count}") != null)
-                {
-                    Ellipse ellipse = (Ellipse)FindName($"LED{count}");
-                    LED newLed = new LED();
-                    newLed.Id = count;
-                    newLed.ellipse = ellipse;
-                    LEDs.Add(newLed);
-                }
-                else
-                    flag = false;
-                count++;
+                Ellipse ellipse = (Ellipse)FindName($"LED{i}");
+                LED newLed = new LED();
+                newLed.Id = i;
+                newLed.ellipse = ellipse;
+                leds.Add(newLed);
             }
-        }
-
-
-
-        public void LedOn(int ledId)
-        {
-            LEDs.ForEach(led =>
-            {
-                if (led.Id == ledId)
-                    led.isOn = true;
-            });
-        }
-        public void LedOff(int ledId)
-        {
-            LEDs.ForEach(led =>
-            {
-                if (led.Id == ledId)
-                    led.isOn = false;
-            });
         }
         public void Restart()
         {
-            for (int i = 0; i < LEDs.Count; i++)
-            {
-                LedOff(i);
-            }
+            for (int i = 0; i < leds.Count; i++)
+                leds[i].Off();
         }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Restart();
             //Lire le code
             text = TextZone.Text;
             string[] lines = text.Split("\n");
@@ -96,61 +70,55 @@ namespace myProgLanguage
                         WAIT(words);
                         break;
                     case "LET":
+                        LET(words);
                         break;
                     case "INC":
                         break;
                 }
-                Refresh();
             }
-            Refresh();
         }
         public void SET(string[] words)
         {
             int param_x = 0;
-
             //TODO : vérifier si words[1] n'est pas une variable ($___)
 
             //vérifier si words[1] peut etre convertie en int
             if (int.TryParse(words[1], out param_x))
-            {
-                LedOn(param_x);
-            }
+                leds[param_x].On();
         }
-
         public void RESET(string[] words)
         {
             int param_x = 0;
-
             //TODO : vérifier si words[1] n'est pas une variable ($___)
 
             //vérifier si words[1] peut etre convertie en int
             if (int.TryParse(words[1], out param_x))
-            {
-                LedOff(param_x);
-            }
+                leds[param_x].Off();
         }
         public void WAIT(string[] words)
         {
             int param_xxx = 0;
-
             //TODO : vérifier si words[1] n'est pas une variable ($___)
 
             //vérifier si words[1] peut etre convertie en int
             if (int.TryParse(words[1], out param_xxx))
-            {
                 Thread.Sleep(param_xxx);
+        }
+        public void LET(string[] words)
+        {
+            int param_val = 0;
+            Variable newVar = new Variable("name", 0);
+            //TODO : vérifier si words[1] n'est pas une variable ($___)
+
+            //vérifier si words[1] peut etre convertie en int
+            if (words[1].Count() > 1 && words[1][0] == '$')
+            {
+                if (int.TryParse(words[2], out param_val))
+                    newVar = new Variable(words[1].Remove(1, 1), param_val);
+                else
+                    newVar = new Variable(words[1].Remove(1, 1), words[2], "STRING");
+                variables.Add(newVar);
             }
         }
-        private void Refresh()
-        {
-            this.Dispatcher.Invoke(() =>
-            {
-                LEDs.ForEach(led =>
-                {
-                    led.Update();
-                });
-            });
-        }
-
     }
 }

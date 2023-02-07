@@ -21,5 +21,15 @@ namespace myProgLanguage
             else
                 ellipse.Fill = Brushes.Red;
         }
+        public void Off()
+        {
+            isOn = false;
+            Update();
+        }
+        public void On()
+        {
+            isOn = true;
+            Update();
+        }
     }
 }
