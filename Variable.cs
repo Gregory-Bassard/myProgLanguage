@@ -12,7 +12,7 @@ namespace myProgLanguage
         public string type { get; set; }
         public string val { get; set; }
 
-        public Variable(string name, string val, string type = "INT")
+        public Variable(string name, string val, string type = "STRING")
         {
             this.name = name;
             this.type = type;

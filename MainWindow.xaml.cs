@@ -14,10 +14,12 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace myProgLanguage
 {
@@ -79,12 +81,23 @@ namespace myProgLanguage
         }
         public void SET(string[] words)
         {
-            int param_x = 0;
-            //TODO : vérifier si words[1] n'est pas une variable ($___)
-
+            int param_x = -1;
+            //vérifier si words[1] est une variable ($___)
+            if (words[1].Count() > 1 && words[1][0] == '$')
+            {
+                variables.ForEach(var =>
+                {
+                    if (var.name == words[1].Remove(0, 1))
+                    {
+                        int.TryParse(var.val, out param_x);
+                        return;
+                    }
+                });
+            }
             //vérifier si words[1] peut etre convertie en int
-            if (int.TryParse(words[1], out param_x))
-                leds[param_x].On();
+            else
+                int.TryParse(words[1], out param_x);
+            leds[param_x].On();
         }
         public void RESET(string[] words)
         {
@@ -114,9 +127,9 @@ namespace myProgLanguage
             if (words[1].Count() > 1 && words[1][0] == '$')
             {
                 if (int.TryParse(words[2], out param_val))
-                    newVar = new Variable(words[1].Remove(1, 1), param_val);
+                    newVar = new Variable(words[1].Remove(0, 1), param_val);
                 else
-                    newVar = new Variable(words[1].Remove(1, 1), words[2], "STRING");
+                    newVar = new Variable(words[1].Remove(0, 1), words[2], "STRING");
                 variables.Add(newVar);
             }
         }
