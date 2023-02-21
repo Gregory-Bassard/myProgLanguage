@@ -1,0 +1,14 @@
+﻿<Window x:Class="myProgLanguage.DebugWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:myProgLanguage"
+        mc:Ignorable="d"
+        Title="DebugWindow" Height="350" Width="250">
+    <Grid>
+        <Label Content="Variables : "/>
+        <ListBox x:Name="lbVariables"  Margin="3,33,3,3">
+        </ListBox>
+    </Grid>
+</Window>

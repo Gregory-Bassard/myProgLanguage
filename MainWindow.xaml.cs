@@ -36,6 +36,8 @@ namespace myProgLanguage
         private DispatcherTimer _timer;
         bool endText = true;
         int indexLine = 0;
+        DebugWindow debugWindow = new DebugWindow();
+        bool debugMode = false;
 
         public MainWindow()
         {
@@ -52,24 +54,105 @@ namespace myProgLanguage
                 leds.Add(newLed);
             }
 
+            tbTextCode.Text = "LABEL @Start\nLET $POS 0\nLABEL @LOOP\nSET $POS\nWAIT 300\nRESET $POS\nINC $POS 1\nIF $POS EQ 9 @START\nGOTO @LOOP";
+
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(200);
             _timer.Tick += Timer_Tick;
             _timer.Start();
         }
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Run_Click(object sender, RoutedEventArgs e)
         {
+            Restart();
             //Lire le code
-            text = TextZone.Text;
+            text = tbTextCode.Text;
             lines = text.Split("\n");
             endText = false;
         }
+        private void Debug_Click(object sender, RoutedEventArgs e)
+        {
+            debugMode = true;
+            Restart();
+            text = tbTextCode.Text;
+            lines = text.Split("\n");
+
+            btnRun.Visibility = Visibility.Hidden;
+            btnDebug.Visibility = Visibility.Hidden;
+            btnStop.Visibility = Visibility.Visible;
+            btnNext.Visibility = Visibility.Visible;
+
+            spTextBox.Visibility = Visibility.Hidden;
+            spListLabels.Visibility = Visibility.Visible;
+
+            //Label x:Name = "..." Content = "..." HorizontalAlignment = "Center" VerticalAlignment = "Top" Width = "450" Height = "Auto"
+            int count = 0;
+
+            foreach (var line in lines)
+            {
+                Label label = new Label();
+                label.HorizontalAlignment = HorizontalAlignment.Center;
+                label.VerticalAlignment = VerticalAlignment.Top;
+                label.Width = 450;
+                label.Height = Double.NaN;
+
+                label.Name = $"lb{count}";
+                label.Content = line;
+                spListLabels.Children.Add(label);
+                count++;
+            }
+            foreach(Label lab in spListLabels.Children)
+            {
+                if (lab.Name == "lb0")
+                {
+                    lab.Background = Brushes.Beige;
+                }
+            }
+
+            debugWindow.Show();
+
+        }
+        private void btnStop_Click(object sender, RoutedEventArgs e)
+        {
+            debugWindow.Close();
+            debugWindow = new DebugWindow();
+            Restart();
+            debugMode = false;
+        }
+        private void btnNext_Click(object sender, RoutedEventArgs e)
+        {
+            ReadLine();
+
+            foreach (Label lab in spListLabels.Children)
+            {
+                if (lab.Name == $"lb{indexLine}")
+                {
+                    lab.Background = Brushes.Beige;
+                }
+                else
+                {
+                    lab.Background = Brushes.Transparent;
+                }
+            }
+        }
         private void Timer_Tick(object sender, EventArgs e)
         {
-            if (!endText)
-                ReadLine();
-            else if (indexLine >= lines.Length - 1)
-                indexLine = 0;
+            if (!debugMode)
+            {
+                if (!endText)
+                    ReadLine();
+                else if (indexLine >= lines.Length - 1)
+                    indexLine = 0;
+            }
+            else
+            {
+                List<string> items = new List<string>();
+                foreach (Variable var in variables)
+                {
+                    string item = $"{var.name} : {var.val}";
+                    items.Add(item);
+                }
+                debugWindow.lbVariables.ItemsSource = items;
+            }
         }
         public void ReadLine()
         {
@@ -108,10 +191,30 @@ namespace myProgLanguage
         }
         public void Restart()
         {
-            for (int i = 0; i < leds.Count; i++)
-                leds[i].Off();
+            indexLine = 0;
+
+            leds = new List<LED>();
+            variables = new List<Variable>();
+
+            for (int i = 0; (Ellipse)FindName($"LED{i}") != null; i++)
+            {
+                Ellipse ellipse = (Ellipse)FindName($"LED{i}");
+                LED newLed = new LED();
+                newLed.Id = i;
+                newLed.ellipse = ellipse;
+                leds.Add(newLed);
+            }
+            
+            btnRun.Visibility = Visibility.Visible;
+            btnDebug.Visibility = Visibility.Visible;
+            btnStop.Visibility = Visibility.Hidden;
+            btnNext.Visibility = Visibility.Hidden;
+
+            spTextBox.Visibility = Visibility.Visible;
+            spListLabels.Visibility = Visibility.Hidden;
+
+            spListLabels.Children.Clear();
         }
-        
         
         public void SET(string[] words)
         {
