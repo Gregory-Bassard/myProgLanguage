@@ -76,7 +76,40 @@ namespace myProgLanguage
             text = tbTextCode.Text;
             lines = text.Split("\n");
 
-            DebugMode();
+            btnRun.Visibility = Visibility.Hidden;
+            btnDebug.Visibility = Visibility.Hidden;
+            btnStop.Visibility = Visibility.Visible;
+            btnNext.Visibility = Visibility.Visible;
+
+            spTextBox.Visibility = Visibility.Hidden;
+            spListLabels.Visibility = Visibility.Visible;
+
+            //Label x:Name = "..." Content = "..." HorizontalAlignment = "Center" VerticalAlignment = "Top" Width = "450" Height = "Auto"
+            int count = 0;
+
+            foreach (var line in lines)
+            {
+                Label label = new Label();
+                label.HorizontalAlignment = HorizontalAlignment.Center;
+                label.VerticalAlignment = VerticalAlignment.Top;
+                label.Width = 450;
+                label.Height = Double.NaN;
+
+                label.Name = $"lb{count}";
+                label.Content = line;
+                spListLabels.Children.Add(label);
+                count++;
+            }
+            foreach(Label lab in spListLabels.Children)
+            {
+                if (lab.Name == "lb0")
+                {
+                    lab.Background = Brushes.Beige;
+                }
+            }
+
+            debugWindow.Show();
+
         }
         private void btnStop_Click(object sender, RoutedEventArgs e)
         {
@@ -104,16 +137,7 @@ namespace myProgLanguage
             if (!debugMode)
             {
                 if (!endText)
-                {
-                    string[] words = lines[indexLine].Split(" ");
-                    if (words[0].StartsWith("=>") && !debugMode)
-                    {
-                        lines[indexLine].Remove(2);
-                        debugMode = true;
-                        DebugMode();
-                    }
                     ReadLine();
-                }
                 else if (indexLine >= lines.Length - 1)
                     indexLine = 0;
             }
@@ -127,46 +151,6 @@ namespace myProgLanguage
                 }
                 debugWindow.lbVariables.ItemsSource = items;
             }
-        }
-        public void DebugMode()
-        {
-            btnRun.Visibility = Visibility.Hidden;
-            btnDebug.Visibility = Visibility.Hidden;
-            btnStop.Visibility = Visibility.Visible;
-            btnNext.Visibility = Visibility.Visible;
-
-            spTextBox.Visibility = Visibility.Hidden;
-            spListLabels.Visibility = Visibility.Visible;
-
-            //Label x:Name = "..." Content = "..." HorizontalAlignment = "Center" VerticalAlignment = "Top" Width = "450" Height = "Auto"
-            int count = 0;
-
-            foreach (var line in lines)
-            {
-                Label label = new Label();
-                label.HorizontalAlignment = HorizontalAlignment.Center;
-                label.VerticalAlignment = VerticalAlignment.Top;
-                label.VerticalContentAlignment = VerticalAlignment.Center;
-                label.Width = 450;
-                label.Height = 25;
-
-                label.Name = $"lb{count}";
-                label.Content = line;
-                spListLabels.Children.Add(label);
-                count++;
-            }
-
-            while (lines[indexLine].Split(" ")[0].StartsWith("#"))
-                indexLine++;
-
-            foreach (Label lab in spListLabels.Children)
-            {
-                if (lab.Name == $"lb{indexLine}")
-                {
-                    lab.Background = Brushes.Beige;
-                }
-            }
-            debugWindow.Show();
         }
         public void ReadLine()
         {
