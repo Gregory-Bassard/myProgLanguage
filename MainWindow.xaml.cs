@@ -54,7 +54,7 @@ namespace myProgLanguage
                 leds.Add(newLed);
             }
 
-            tbTextCode.Text = "LABEL @Start\nLET $POS 0\nLABEL @LOOP\nSET $POS\nWAIT 300\nRESET $POS\nINC $POS 1\nIF $POS EQ 9 @START\nGOTO @LOOP";
+            tbTextCode.Text = "#Petit Code 1\nLABEL @Start\nLET $POS 0\nLABEL @LOOP\nSET $POS\nWAIT 300\nRESET $POS\nINC $POS 1\nIF $POS EQ 9 @START\nGOTO @LOOP";
 
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(200);
@@ -76,6 +76,60 @@ namespace myProgLanguage
             text = tbTextCode.Text;
             lines = text.Split("\n");
 
+            DebugMode();
+        }
+        private void btnStop_Click(object sender, RoutedEventArgs e)
+        {
+            debugWindow.Close();
+            debugWindow = new DebugWindow();
+            Restart();
+            debugMode = false;
+        }
+        private void btnNext_Click(object sender, RoutedEventArgs e)
+        {
+            while (lines[indexLine].Split(" ")[0].StartsWith("#"))
+                indexLine++;
+
+            foreach (Label lab in spListLabels.Children)
+            {
+                if (lab.Name == $"lb{indexLine}")
+                    lab.Background = Brushes.Beige;
+                else
+                    lab.Background = Brushes.Transparent;
+            }
+            ReadLine();
+        }
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (!debugMode)
+            {
+                if (!endText)
+                {
+                    string[] words = lines[indexLine].Split(" ");
+                    if (words[0].StartsWith("=>") && !debugMode)
+                    {
+                        lines[indexLine].Remove(2);
+                        debugMode = true;
+                        DebugMode();
+                    }
+                    ReadLine();
+                }
+                else if (indexLine >= lines.Length - 1)
+                    indexLine = 0;
+            }
+            else
+            {
+                List<string> items = new List<string>();
+                foreach (Variable var in variables)
+                {
+                    string item = $"{var.name} : {var.val}";
+                    items.Add(item);
+                }
+                debugWindow.lbVariables.ItemsSource = items;
+            }
+        }
+        public void DebugMode()
+        {
             btnRun.Visibility = Visibility.Hidden;
             btnDebug.Visibility = Visibility.Hidden;
             btnStop.Visibility = Visibility.Visible;
@@ -92,35 +146,18 @@ namespace myProgLanguage
                 Label label = new Label();
                 label.HorizontalAlignment = HorizontalAlignment.Center;
                 label.VerticalAlignment = VerticalAlignment.Top;
+                label.VerticalContentAlignment = VerticalAlignment.Center;
                 label.Width = 450;
-                label.Height = Double.NaN;
+                label.Height = 25;
 
                 label.Name = $"lb{count}";
                 label.Content = line;
                 spListLabels.Children.Add(label);
                 count++;
             }
-            foreach(Label lab in spListLabels.Children)
-            {
-                if (lab.Name == "lb0")
-                {
-                    lab.Background = Brushes.Beige;
-                }
-            }
 
-            debugWindow.Show();
-
-        }
-        private void btnStop_Click(object sender, RoutedEventArgs e)
-        {
-            debugWindow.Close();
-            debugWindow = new DebugWindow();
-            Restart();
-            debugMode = false;
-        }
-        private void btnNext_Click(object sender, RoutedEventArgs e)
-        {
-            ReadLine();
+            while (lines[indexLine].Split(" ")[0].StartsWith("#"))
+                indexLine++;
 
             foreach (Label lab in spListLabels.Children)
             {
@@ -128,31 +165,8 @@ namespace myProgLanguage
                 {
                     lab.Background = Brushes.Beige;
                 }
-                else
-                {
-                    lab.Background = Brushes.Transparent;
-                }
             }
-        }
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            if (!debugMode)
-            {
-                if (!endText)
-                    ReadLine();
-                else if (indexLine >= lines.Length - 1)
-                    indexLine = 0;
-            }
-            else
-            {
-                List<string> items = new List<string>();
-                foreach (Variable var in variables)
-                {
-                    string item = $"{var.name} : {var.val}";
-                    items.Add(item);
-                }
-                debugWindow.lbVariables.ItemsSource = items;
-            }
+            debugWindow.Show();
         }
         public void ReadLine()
         {

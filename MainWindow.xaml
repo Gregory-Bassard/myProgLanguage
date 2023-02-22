@@ -51,8 +51,9 @@
         <StackPanel x:Name="spTextBox" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="13" Grid.Row="5" Margin="75,15,75,15">
             <TextBox x:Name="tbTextCode" TextWrapping="Wrap" Text=""  Width="475" Height="455" HorizontalAlignment="Center" VerticalScrollBarVisibility="Hidden" AcceptsReturn="True"/>
         </StackPanel>
+        <!--<ScrollViewer>-->
         <StackPanel x:Name="spListLabels" Visibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="13" Grid.Row="5" Width="475" Height="455">
-            
+
         </StackPanel>
         <!--<ListBox x:Name="lbTextCode" Visibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="13" Grid.Row="5" Width="475" Height="455"/>-->
         <Button x:Name="btnRun" Grid.Column="3" Grid.ColumnSpan="3" Content="Run" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Width="75" Click="Run_Click"/>
