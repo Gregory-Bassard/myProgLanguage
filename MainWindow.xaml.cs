@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -36,6 +37,7 @@ namespace myProgLanguage
         private DispatcherTimer _timer;
         bool endText = true;
         int indexLine = 0;
+        int debuggingLine = -1;
         DebugWindow debugWindow = new DebugWindow();
         bool debugMode = false;
 
@@ -67,20 +69,16 @@ namespace myProgLanguage
             //Lire le code
             text = tbTextCode.Text;
             lines = text.Split("\n");
+            if(cbRunMode.SelectedIndex == 1)
+            {
+                AlternativeDisplay(true);
+                _timer.Stop();
+            }
+
             endText = false;
         }
-        private void Debug_Click(object sender, RoutedEventArgs e)
+        public void AlternativeDisplay(bool intermediaryDis = false)
         {
-            debugMode = true;
-            Restart();
-            text = tbTextCode.Text;
-            lines = text.Split("\n");
-
-            btnRun.Visibility = Visibility.Hidden;
-            btnDebug.Visibility = Visibility.Hidden;
-            btnStop.Visibility = Visibility.Visible;
-            btnNext.Visibility = Visibility.Visible;
-
             spTextBox.Visibility = Visibility.Hidden;
             spListLabels.Visibility = Visibility.Visible;
 
@@ -94,22 +92,63 @@ namespace myProgLanguage
                 label.VerticalAlignment = VerticalAlignment.Top;
                 label.Width = 450;
                 label.Height = Double.NaN;
+                if (intermediaryDis)
+                {
+                    label.MouseDoubleClick += Label_MouseDoubleClick;
+                    btnDebug.Visibility = Visibility.Hidden;
+                }
 
                 label.Name = $"lb{count}";
                 label.Content = line;
                 spListLabels.Children.Add(label);
                 count++;
             }
-            foreach(Label lab in spListLabels.Children)
+            if (!intermediaryDis)
             {
-                if (lab.Name == "lb0")
+                btnRun.Visibility = Visibility.Hidden;
+                btnDebug.Visibility = Visibility.Hidden;
+                btnStop.Visibility = Visibility.Visible;
+                btnNext.Visibility = Visibility.Visible;
+
+                foreach (Label lab in spListLabels.Children)
                 {
-                    lab.Background = Brushes.Beige;
+                    if (lab.Name == $"lb{indexLine}")
+                    {
+                        lab.Background = Brushes.Beige;
+                    }
                 }
             }
+        }
 
+        private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Label label = sender as Label;
+            if (int.Parse(label.Name.Substring(2)) != debuggingLine)
+            {
+                label.Background = Brushes.Red;
+                foreach (Label lab in spListLabels.Children)
+                {
+                    if (lab.Name == $"lb{debuggingLine}")
+                    {
+                        lab.Background = Brushes.White;
+                    }
+                }
+                debuggingLine = int.Parse(label.Name.Substring(2));
+            }else
+            {
+                label.Background = Brushes.White;
+                debuggingLine = 0;
+            }    
+        }
+
+        private void Debug_Click(object sender, RoutedEventArgs e)
+        {
+            debugMode = true;
+            Restart();
+            text = tbTextCode.Text;
+            lines = text.Split("\n");
+            AlternativeDisplay();
             debugWindow.Show();
-
         }
         private void btnStop_Click(object sender, RoutedEventArgs e)
         {
